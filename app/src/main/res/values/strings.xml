@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AndroidTest</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_refresh">Refresh</string>
+</resources>
