@@ -25,8 +25,7 @@ public class ImageLoader {
     private int length;
 
 
-    public ImageLoader(int length 
-                       ){
+    public ImageLoader(int length){
 
     /**
      * Simple function for loading a bitmap image from the web
