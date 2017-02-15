@@ -3,6 +3,7 @@ package com.waracle.androidtest;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -18,8 +19,14 @@ import java.security.InvalidParameterException;
 public class ImageLoader {
 
     private static final String TAG = ImageLoader.class.getSimpleName();
+    
+    private boolean[] bitmapStatus;
+    private Bitmap[] bitmap;
+    private int length;
 
-    public ImageLoader() { /**/ }
+
+    public ImageLoader(int length 
+                       ){
 
     /**
      * Simple function for loading a bitmap image from the web
@@ -27,7 +34,17 @@ public class ImageLoader {
      * @param url       image url
      * @param imageView view to set image too.
      */
-    public void load(String url, ImageView imageView) {
+    bitmapStatus=new boolean[length];
+        bitmap=new Bitmap[length];
+        Arrays.fill(bitmapStatus, Boolean.FALSE);
+  }
+
+    public void setlength(int length) {
+        this.length=length;
+    }
+
+
+    public void load(String url, ImageView imageView, int position) {
         if (TextUtils.isEmpty(url)) {
             throw new InvalidParameterException("URL is empty!");
         }
@@ -36,7 +53,11 @@ public class ImageLoader {
         // that have already been loaded previously??
 
         try {
-            setImageView(imageView, convertToBitmap(loadImageData(url)));
+                        if(!bitmapStatus[position])
+                new LoadImage(imageView,position).execute(url);
+            else
+                setImageView(imageView,bitmap[position]);
+
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
         }
@@ -74,4 +95,46 @@ public class ImageLoader {
     private static void setImageView(ImageView imageView, Bitmap bitmap) {
         imageView.setImageBitmap(bitmap);
     }
+    private class LoadImage extends AsyncTask<String, Void, Bitmap> {
+
+        ImageView image;
+        int position;
+
+        public LoadImage(ImageView image,int position)
+        {
+            this.image=image;
+            this.position=position;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+
+            try {
+                return convertToBitmap(loadImageData(params[0]));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+
+            bitmapStatus[position]=true;
+            bitmap[position]=result;
+            setImageView(image,result);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            image.setImageResource(R.mipmap.android);
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
+    }
+
+
+
 }
