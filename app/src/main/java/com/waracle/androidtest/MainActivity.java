@@ -28,13 +28,22 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
+        /*
     private static String JSON_URL = "https://gist.githubusercontent.com/hart88/198f29ec5114a3ec3460/" +
             "raw/8dd19a88f9b8d24c23d9960f3300d0c917a4f07c/cake.json";
+    */
+    private static String JSON_URL = "https://gist.githubusercontent.com/hart88/198f29ec5114a3ec3460/raw/8dd19a88f9b8d24c23d9960f3300d0c917a4f07c/cake.json";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy);
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment())
@@ -77,14 +86,15 @@ public class MainActivity extends AppCompatActivity {
 
         private ListView mListView;
         private MyAdapter mAdapter;
+        Bitmap[] bitmap;
 
         public PlaceholderFragment() { /**/ }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+              public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            mListView = (ListView) rootView.findViewById(R.id.list);
+            mListView = (ListView) rootView.findViewById(android.R.id.list);
             return rootView;
         }
 
@@ -92,30 +102,17 @@ public class MainActivity extends AppCompatActivity {
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            // Create and set the list adapter.
-            mAdapter = new MyAdapter();
-            mListView.setAdapter(mAdapter);
 
-            // Load data from net.
-            try {
-                JSONArray array = loadData();
-                mAdapter.setItems(array);
-            } catch (IOException | JSONException e) {
-                Log.e(TAG, e.getMessage());
-            }
+
+            new LoadDataTask().execute(JSON_URL);
         }
-
 
         private JSONArray loadData() throws IOException, JSONException {
             URL url = new URL(JSON_URL);
+            JSONArray array=null;
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             try {
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                // Can you think of a way to improve the performance of loading data
-                // using HTTP headers???
-
-                // Also, Do you trust any utils thrown your way????
 
                 byte[] bytes = StreamUtils.readUnknownFully(in);
 
@@ -125,11 +122,53 @@ public class MainActivity extends AppCompatActivity {
                 // Convert byte array to appropriate encoded string.
                 String jsonText = new String(bytes, charset);
 
+
+                array=new JSONArray(jsonText);
+
                 // Read string as JSON.
-                return new JSONArray(jsonText);
+                return array;
             } finally {
                 urlConnection.disconnect();
+
+
             }
+        }
+
+
+        private class LoadDataTask extends AsyncTask<String, Void, JSONArray> {
+
+
+            @Override
+            protected JSONArray doInBackground(String... params) {
+
+
+                try {
+                    return loadData();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(JSONArray result) {
+// Create and set the list adapter.
+                mAdapter = new MyAdapter(result.length());
+                mListView.setAdapter(mAdapter);
+
+                mAdapter.setItems(result);
+            }
+
+            @Override
+            protected void onPreExecute() {
+
+            }
+
+            @Override
+            protected void onProgressUpdate(Void... values) {}
         }
 
         /**
@@ -156,14 +195,15 @@ public class MainActivity extends AppCompatActivity {
             // Can you think of a better way to represent these items???
             private JSONArray mItems;
             private ImageLoader mImageLoader;
+            int length;
 
-            public MyAdapter() {
-                this(new JSONArray());
+            public MyAdapter(int length) {
+                this(new JSONArray(),length);
             }
 
-            public MyAdapter(JSONArray items) {
+            public MyAdapter(JSONArray items,int length) {
                 mItems = items;
-                mImageLoader = new ImageLoader();
+                mImageLoader = new ImageLoader(length);
             }
 
             @Override
@@ -199,7 +239,8 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject object = (JSONObject) getItem(position);
                         title.setText(object.getString("title"));
                         desc.setText(object.getString("desc"));
-                        mImageLoader.load(object.getString("image"), image);
+                        mImageLoader.load(object.getString("image"), image, position);
+                        //image.setImageBitmap(bitmap[position]);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -213,4 +254,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private static Bitmap convertToBitmap(byte[] data) {
+        return BitmapFactory.decodeByteArray(data, 0, data.length);
+    }
+
+    private static void setImageView(ImageView imageView, Bitmap bitmap) {
+        imageView.setImageBitmap(bitmap);
+    }
+
+
+}
+
 }
