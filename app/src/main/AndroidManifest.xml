@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.waracle.androidtest" >
-
+    <uses-sdk
+        android:minSdkVersion="21"
+        tools:overrideLibrary="android.support.v7.appcompat,
+        android.support.v4,
+        android.support.mediacompat,
+        android.support.fragment,
+        android.support.coreui,
+        android.support.coreutils,
+        android.support.graphics.drawable"
+    />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
