@@ -123,13 +123,26 @@ public class ImageLoader {
 
         InputStream inputStream = null;
         try {
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+            connection.setInstanceFollowRedirects(true);
+
+            int responseCode = connection.getResponseCode();
+
+            // If the URL indicates that the content has been moved
+            if( responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM ) {
+                String redirect = connection.getHeaderField("Location");
+
+                // Attempt to open the URL again, which will be
+                connection = (HttpURLConnection) new URL(redirect).openConnection();
+            }
+
             try {
                 // Read data from workstation
                 inputStream = connection.getInputStream();
             }
             catch( IOException e ) {
-                // Read the error from the workstation
-                inputStream = connection.getErrorStream();
+                e.printStackTrace();
             }
 
             // Can you think of a way to make the entire
