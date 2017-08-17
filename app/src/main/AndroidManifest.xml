@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.waracle.androidtest" >
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-sdk
         android:minSdkVersion="21"
         tools:overrideLibrary="android.support.v7.appcompat,
