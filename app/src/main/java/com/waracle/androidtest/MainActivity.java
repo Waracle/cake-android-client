@@ -169,8 +169,11 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("ViewHolder")
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
-                LayoutInflater inflater = LayoutInflater.from(getActivity());
-                View root = inflater.inflate(R.layout.list_item_layout, parent, false);
+                View root = convertView;
+                if (root == null) {
+                    LayoutInflater inflater = LayoutInflater.from(getActivity());
+                    root = inflater.inflate(R.layout.list_item_layout, parent, false);
+                 }
                 if (root != null) {
                     TextView title = (TextView) root.findViewById(R.id.title);
                     TextView desc = (TextView) root.findViewById(R.id.desc);
