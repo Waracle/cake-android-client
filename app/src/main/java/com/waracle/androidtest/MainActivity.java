@@ -84,13 +84,14 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            mListView = (ListView) rootView.findViewById(R.id.list);
             return rootView;
         }
 
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
+
+            mListView = getListView();
 
             // Create and set the list adapter.
             mAdapter = new MyAdapter();
