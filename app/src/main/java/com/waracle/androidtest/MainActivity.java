@@ -1,6 +1,8 @@
 package com.waracle.androidtest;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -84,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            mListView = (ListView) rootView.findViewById(R.id.list);
             return rootView;
         }
 
@@ -92,44 +93,23 @@ public class MainActivity extends AppCompatActivity {
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
+            mListView = getListView();
+
             // Create and set the list adapter.
             mAdapter = new MyAdapter();
             mListView.setAdapter(mAdapter);
 
             // Load data from net.
             try {
-                JSONArray array = loadData();
-                mAdapter.setItems(array);
+                loadData();
             } catch (IOException | JSONException e) {
                 Log.e(TAG, e.getMessage());
             }
         }
 
 
-        private JSONArray loadData() throws IOException, JSONException {
-            URL url = new URL(JSON_URL);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            try {
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                // Can you think of a way to improve the performance of loading data
-                // using HTTP headers???
-
-                // Also, Do you trust any utils thrown your way????
-
-                byte[] bytes = StreamUtils.readUnknownFully(in);
-
-                // Read in charset of HTTP content.
-                String charset = parseCharset(urlConnection.getRequestProperty("Content-Type"));
-
-                // Convert byte array to appropriate encoded string.
-                String jsonText = new String(bytes, charset);
-
-                // Read string as JSON.
-                return new JSONArray(jsonText);
-            } finally {
-                urlConnection.disconnect();
-            }
+        private void loadData() throws IOException, JSONException {
+             new GetCakeFeedTask().execute(new URL(JSON_URL));
         }
 
         /**
@@ -189,8 +169,11 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("ViewHolder")
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
-                LayoutInflater inflater = LayoutInflater.from(getActivity());
-                View root = inflater.inflate(R.layout.list_item_layout, parent, false);
+                View root = convertView;
+                if (root == null) {
+                    LayoutInflater inflater = LayoutInflater.from(getActivity());
+                    root = inflater.inflate(R.layout.list_item_layout, parent, false);
+                 }
                 if (root != null) {
                     TextView title = (TextView) root.findViewById(R.id.title);
                     TextView desc = (TextView) root.findViewById(R.id.desc);
@@ -210,6 +193,50 @@ public class MainActivity extends AppCompatActivity {
 
             public void setItems(JSONArray items) {
                 mItems = items;
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+
+        private class GetCakeFeedTask extends AsyncTask<URL, Void, JSONArray> {
+
+            @Override
+            protected JSONArray doInBackground(URL... urls) {
+                HttpURLConnection urlConnection = null;
+                try {
+                    URL url = urls[0];
+                    urlConnection = (HttpURLConnection) url.openConnection();
+
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                    // Can you think of a way to improve the performance of loading data
+                    // using HTTP headers???
+
+                    // Also, Do you trust any utils thrown your way????
+
+                    byte[] bytes = StreamUtils.readUnknownFully(in);
+
+                    // Read in charset of HTTP content.
+                    String charset = parseCharset(urlConnection.getRequestProperty("Content-Type"));
+
+                    // Convert byte array to appropriate encoded string.
+                    String jsonText = new String(bytes, charset);
+
+                    // Read string as JSON.
+                    return new JSONArray(jsonText);
+
+                } catch (IOException e) {
+                    return new JSONArray();
+                } catch (JSONException e) {
+                    //Todo handle with error message?
+                    System.out.print(e.getStackTrace());
+                    return new JSONArray();
+                } finally {
+                    urlConnection.disconnect();
+                }
+            }
+
+            protected void onPostExecute(JSONArray array) {
+                mAdapter.setItems(array);
             }
         }
     }
