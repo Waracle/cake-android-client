@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            mListView = (ListView) rootView.findViewById(R.id.list);
+            mListView = (ListView) rootView.findViewById(android.R.id.list);
             return rootView;
         }
 
