@@ -6,9 +6,9 @@
 - Instead of using a typical MVP, MVVM, MVI, passive MVP or any other design pattern for the presentation
 layer, having in consideration the ease of the presentation logic, I've chosen to split the project in
 three different layers in order to abstract all the logic related to each of them (presentation, core and
-data). Even without a proper Repository or Presenter, the project is structured in a clean way. This decision
-makes easy to switch any of the android components used for the test for any other third party libraries in
-any of the layers.
+data). Even missing a proper **Repository** or **Presenter**, the project is structured in a clean way.
+This decision makes easy to switch any of the android components used for the test for any other third party
+libraries in any of the layers.
 
 - Given the mandatory rule of not using third party libraries and I couldn't use Dagger, there is a custom Injector
 made for the Fragment in order to provide all necessary dependencies.
