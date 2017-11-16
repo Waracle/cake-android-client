@@ -1,6 +1,7 @@
 package com.waracle.androidtest;
 
 import android.annotation.SuppressLint;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
         private ListView mListView;
         private MyAdapter mAdapter;
+        private ListLoadingTask listLoadingTask;
 
         public PlaceholderFragment() { /**/ }
 
@@ -96,39 +99,59 @@ public class MainActivity extends AppCompatActivity {
             mAdapter = new MyAdapter();
             mListView.setAdapter(mAdapter);
 
-            // Load data from net.
-            try {
-                JSONArray array = loadData();
-                mAdapter.setItems(array);
-            } catch (IOException | JSONException e) {
-                Log.e(TAG, e.getMessage());
-            }
+            listLoadingTask = new ListLoadingTask(mAdapter);
+            listLoadingTask.execute();
         }
 
+        private static final class ListLoadingTask extends AsyncTask<Void, Void, JSONArray> {
 
-        private JSONArray loadData() throws IOException, JSONException {
-            URL url = new URL(JSON_URL);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            try {
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            private final MyAdapter mAdapter;
 
-                // Can you think of a way to improve the performance of loading data
-                // using HTTP headers???
+            ListLoadingTask(MyAdapter mAdapter) {
+                this.mAdapter = mAdapter;
+            }
 
-                // Also, Do you trust any utils thrown your way????
+            @Override
+            protected JSONArray doInBackground(Void... voids) {
+                try {
+                    return loadData();
+                } catch (IOException | JSONException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+                return null;
+            }
 
-                byte[] bytes = StreamUtils.readUnknownFully(in);
+            @Override
+            protected void onPostExecute(JSONArray jsonArray) {
+                super.onPostExecute(jsonArray);
+                mAdapter.setItems(jsonArray);
+                mAdapter.notifyDataSetChanged();
+            }
 
-                // Read in charset of HTTP content.
-                String charset = parseCharset(urlConnection.getRequestProperty("Content-Type"));
+            private static JSONArray loadData() throws IOException, JSONException {
+                URL url = new URL(JSON_URL);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
-                // Convert byte array to appropriate encoded string.
-                String jsonText = new String(bytes, charset);
+                    // Can you think of a way to improve the performance of loading data
+                    // using HTTP headers???
 
-                // Read string as JSON.
-                return new JSONArray(jsonText);
-            } finally {
-                urlConnection.disconnect();
+                    // Also, Do you trust any utils thrown your way????
+
+                    byte[] bytes = StreamUtils.readUnknownFully(in);
+
+                    // Read in charset of HTTP content.
+                    String charset = parseCharset(urlConnection.getRequestProperty("Content-Type"));
+
+                    // Convert byte array to appropriate encoded string.
+                    String jsonText = new String(bytes, charset);
+
+                    // Read string as JSON.
+                    return new JSONArray(jsonText);
+                } finally {
+                    urlConnection.disconnect();
+                }
             }
         }
 
