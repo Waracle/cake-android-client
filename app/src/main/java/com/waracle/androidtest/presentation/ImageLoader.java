@@ -1,10 +1,11 @@
-package com.waracle.androidtest;
+package com.waracle.androidtest.presentation;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.ImageView;
+import com.waracle.androidtest.StreamUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -13,9 +14,6 @@ import java.security.InvalidParameterException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Created by Riad on 20/05/2015.
- */
 public class ImageLoader {
 
   private static final int DEFAULT_THREAD_COUNT = 3;
@@ -23,7 +21,7 @@ public class ImageLoader {
 
   ExecutorService executorService;
 
-  ImageLoader() {
+  public ImageLoader() {
     executorService = Executors.newFixedThreadPool(DEFAULT_THREAD_COUNT);
   }
 
@@ -62,38 +60,40 @@ public class ImageLoader {
         Log.e(TAG, e.getMessage());
       }
     }
-  }
 
-  private static byte[] loadImageData(String url) throws IOException {
-    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-    InputStream inputStream = null;
-    try {
+    private static byte[] loadImageData(String url) throws IOException {
+      HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+      InputStream inputStream = null;
       try {
-        // Read data from workstation
-        inputStream = connection.getInputStream();
-      } catch (IOException e) {
-        // Read the error from the workstation
-        inputStream = connection.getErrorStream();
+        try {
+          // Read data from workstation
+          inputStream = connection.getInputStream();
+        } catch (IOException e) {
+          // Read the error from the workstation
+          inputStream = connection.getErrorStream();
+        }
+
+        // Can you think of a way to make the entire
+        // HTTP more efficient using HTTP headers??
+
+        return StreamUtils.readUnknownFully(inputStream);
+      } finally {
+        // Close the input stream if it exists.
+        StreamUtils.close(inputStream);
+
+        // Disconnect the connection
+        connection.disconnect();
       }
+    }
 
-      // Can you think of a way to make the entire
-      // HTTP more efficient using HTTP headers??
+    private static Bitmap convertToBitmap(byte[] data) {
+      return BitmapFactory.decodeByteArray(data, 0, data.length);
+    }
 
-      return StreamUtils.readUnknownFully(inputStream);
-    } finally {
-      // Close the input stream if it exists.
-      StreamUtils.close(inputStream);
-
-      // Disconnect the connection
-      connection.disconnect();
+    private static void setImageView(ImageView imageView, Bitmap bitmap) {
+      imageView.setImageBitmap(bitmap);
     }
   }
 
-  private static Bitmap convertToBitmap(byte[] data) {
-    return BitmapFactory.decodeByteArray(data, 0, data.length);
-  }
 
-  private static void setImageView(ImageView imageView, Bitmap bitmap) {
-    imageView.setImageBitmap(bitmap);
-  }
 }

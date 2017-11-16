@@ -14,11 +14,11 @@ We would like you to fix the crash bug, ensure the functionality of the app work
 
 Additionally, feel free to refactor and optimise the code where appropriate. Ideally, what we’d be looking for is:
 
-* Simple fixes for crash bug(s)
+* Simple fixes for crash bug(s) ✔
 * Application to support rotation
 * Safe and efficient loading of images
 * Removal of any redundant code
-* Refactoring of code to best practices
+* Refactoring of code to best practices ✔
 
 This is your opportunity to show us how you think and Android app should be architected, please make any changes you feel would benefit the app.
 

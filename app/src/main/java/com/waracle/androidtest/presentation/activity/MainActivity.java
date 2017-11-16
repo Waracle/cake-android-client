@@ -2,7 +2,7 @@ package com.waracle.androidtest.presentation.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import com.waracle.androidtest.PlaceholderFragment;
+import com.waracle.androidtest.presentation.fragment.PlaceholderFragment;
 import com.waracle.androidtest.R;
 
 public final class MainActivity extends AppCompatActivity {
