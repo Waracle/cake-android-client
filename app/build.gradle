@@ -1,9 +1,10 @@
 buildscript {
     repositories {
         jcenter()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:+'
+        classpath 'com.android.tools.build:gradle:3.3.1'
     }
 }
 apply plugin: 'com.android.application'
@@ -14,7 +15,6 @@ repositories {
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "26.0.2"
 
     defaultConfig {
         applicationId "com.waracle.androidtest"
